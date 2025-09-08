@@ -1,3 +1,8 @@
+Yes, I used AI to assist with this project. I created a prompts/ folder with several short prompts to guide the development, and the AI helped generate and refine the code, especially for handling Google Sheets integration, robust error handling, and producing a reproducible, balanced team assignment algorithm. All major modeling and implementation choices were reviewed and adjusted to ensure clarity, maintainability, and correctness. This is indicated in the README and documented in the prompts/ directory.
+
+_________________________________
+
+
 First prompt:
 Hello, I would like you to create a Node.js program using TypeScript. The program should run a function called customFunction. For now, let’s make this function simply sum two values provided by the user as command-line arguments.
 
@@ -7,7 +12,7 @@ Configuration prompts:
 - Once all the data from the files is being retrieved correctly, ensure that any empty properties are handled gracefully to avoid formatting or type errors. Choose the best solution and implement it without asking for further permission.
 - Next, let’s make customFunction more complex: user data will come from 4 different Google Sheets. You need to fetch and merge all the information, using player_id as the unique key to join data from all sheets.
 - Add a new property called "Average team score" (total property value / number of players). All final statistics should be displayed as integers.
-- The information will now be sourced directly from a Google Sheets file. Here is the link—please help set up the connection: https://docs.google.com/spreadsheets/d/14ecaqMY5Rq-fVn1eebS6Yq5GUyjfXDuUm-kn-tt4XpM/edit?gid=0#gid=0
+- The information will now be sourced directly from a Google Sheets file. Here is the link—please help set up the connection: https://docs.google.com/spreadsheets/d/14ecaqMY5Rq-fVn1eebS6Yq5GUyjfXDuUm-kn-tt4XpM/edit?gid=0#gid=0 (Almost all the customFunction was created with this prompt)
 
 Main prompt:
 Create a table to be used as a placeholder for modifying the custom formula.
