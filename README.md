@@ -19,7 +19,7 @@ Reassign players into T teams for a new season so teams are balanced and the out
    ```
 2. Run the CLI:
    ```sh
-   npm start seed=123 teamsqty=3 propiedad=historical_points_earned
+   npm start seed=123 teamsqty=3 property=historical_points_earned
    ```
    - `seed`: Any number for reproducible results
    - `teamsqty`: Number of teams

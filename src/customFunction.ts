@@ -25,7 +25,7 @@ export interface SheetSource {
 export interface CustomOptions {
   seed?: number;
   teamsqty?: number;
-  propiedad?: string;
+  property?: string;
   sheets?: SheetSource[];
 }
 
@@ -37,7 +37,7 @@ export async function customFunction(options: CustomOptions = {}) {
   const {
     seed,
     teamsqty = 2,
-    propiedad = 'historical_points_earned',
+    property = 'historical_points_earned',
     sheets = [
       { sheetId: '1Joasxcrn2AoGZRLJKe7Ub1beSQUSUE885hS_y9sy9aU', range: 'Sheet1!A2:Z' },
       { sheetId: '1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90', range: 'Sheet1!A2:Z' },
@@ -112,8 +112,8 @@ export async function customFunction(options: CustomOptions = {}) {
   // Snake draft algorithm with strict team size control
   // 1. Sort by property (descending)
   const sorted = [...users].sort((a, b) => {
-    const aVal = typeof a[propiedad] === 'number' ? (a[propiedad] as number) : 0;
-    const bVal = typeof b[propiedad] === 'number' ? (b[propiedad] as number) : 0;
+    const aVal = typeof a[property] === 'number' ? (a[property] as number) : 0;
+    const bVal = typeof b[property] === 'number' ? (b[property] as number) : 0;
     return bVal - aVal;
   });
   // 2. Calculate ideal number of players per team
@@ -173,7 +173,7 @@ export async function customFunction(options: CustomOptions = {}) {
   // Calculate total sum of the property
   const totalProp = result.reduce((acc, user) => {
     const found = users.find(u => u['player_id'] === user.player_id);
-    return acc + (found && typeof found[propiedad] === 'number' ? (found[propiedad] as number) : 0);
+    return acc + (found && typeof found[property] === 'number' ? (found[property] as number) : 0);
   }, 0);
 
   // List of unique properties (excluding player_id)
@@ -226,7 +226,7 @@ export async function customFunction(options: CustomOptions = {}) {
 
   // Per team
   const teamStats = groups.map((group, idx) => {
-    const points = group.map(u => typeof u['historical_points_earned'] === 'number' ? u['historical_points_earned'] as number : 0);
+    const points = group.map(u => typeof u[property] === 'number' ? u[property] as number : 0);
     const actives = group.map(u => typeof u['days_active_last_30'] === 'number' ? u['days_active_last_30'] as number : 0);
     const streaks = group.map(u => typeof u['current_streak_value'] === 'number' ? u['current_streak_value'] as number : 0);
     const events = group.map(u => typeof u['historical_events_participated'] === 'number' ? u['historical_events_participated'] as number : 0);
