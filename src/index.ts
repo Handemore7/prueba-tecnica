@@ -21,44 +21,20 @@ async function main() {
   try {
     const { teams, teamsByGroup, usedSeed, stats } = await customFunction(options);
     const nf = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
-    // --- Clean summary output ---
-    console.log('==============================');
-    console.log(' TEAM BALANCER REPORT');
-    console.log('==============================\n');
-    // Summary
-    console.log('Summary:');
-    console.log(`• Teams: ${nf(stats.total_teams)}`);
-    console.log(`• Players: ${nf(stats.total_players)}`);
-    console.log(`• Avg. team size: ${nf(stats.average_team_size)}`);
-    console.log(`• Avg. team score: ${nf(stats.average_team_score)} points`);
-    console.log(`• Sheets read: ${stats.sheets_read}`);
-    console.log(`• Seed used: ${usedSeed}`);
-    console.log('\nKey Balance Metrics:');
-    // Key property (historical points)
-    console.log(`• Historical points: mean=${nf(stats.points.mean)}, median=${nf(stats.points.median)}, min=${nf(stats.points.min)}, max=${nf(stats.points.max)}, stddev=${nf(stats.points.stddev)}`);
-    console.log(`  Top 5: ${stats.points.top5.join(', ')}`);
-    console.log(`  Bottom 5: ${stats.points.bottom5.join(', ')}`);
-    // Other global stats (compact)
-    console.log(`• Activity (last 30d): mean=${nf(stats.actives.mean)}, min=${nf(stats.actives.min)}, max=${nf(stats.actives.max)}`);
-    console.log(`• Streaks: mean=${nf(stats.streaks.mean)}, min=${nf(stats.streaks.min)}, max=${nf(stats.streaks.max)}`);
-    console.log(`• Events participated: mean=${nf(stats.events.mean)}, min=${nf(stats.events.min)}, max=${nf(stats.events.max)}`);
-    console.log(`• Engagement: mean=${nf(stats.engagement.mean)}, min=${nf(stats.engagement.min)}, max=${nf(stats.engagement.max)}`);
-    // Per-team stats (compact)
-    console.log('\nPer-Team Breakdown:');
+    // --- Concise but informative summary output ---
+    console.log('=== TEAM BALANCER SUMMARY ===');
+    console.log(`Teams: ${nf(stats.total_teams)} | Players: ${nf(stats.total_players)} | Avg. team size: ${nf(stats.average_team_size)}`);
+    console.log(`Avg. team score: ${nf(stats.average_team_score)} | Sheets: ${stats.sheets_read} | Seed: ${usedSeed}`);
+    console.log('--- Global Averages ---');
+    console.log(`Points: mean=${nf(stats.points.mean)}, median=${nf(stats.points.median)}, min=${nf(stats.points.min)}, max=${nf(stats.points.max)}, stddev=${nf(stats.points.stddev)}`);
+    console.log(`Activity (30d): mean=${nf(stats.actives.mean)}, min=${nf(stats.actives.min)}, max=${nf(stats.actives.max)}`);
+    console.log(`Streaks: mean=${nf(stats.streaks.mean)}, min=${nf(stats.streaks.min)}, max=${nf(stats.streaks.max)}`);
+    console.log(`Events: mean=${nf(stats.events.mean)}, min=${nf(stats.events.min)}, max=${nf(stats.events.max)}`);
+    console.log('--- Per-Team Comparison ---');
     stats.team_stats.forEach((team: any) => {
-      console.log(`- Team ${team.team} (Players: ${nf(team.players)})`);
-      console.log(`    • Points: sum=${nf(team.points.sum)}, mean=${nf(team.points.mean)}, median=${nf(team.points.median)}, min=${nf(team.points.min)}, max=${nf(team.points.max)}, stddev=${nf(team.points.stddev)}`);
-      console.log(`    • Activity: mean=${nf(team.actives.mean)}, min=${nf(team.actives.min)}, max=${nf(team.actives.max)}`);
-      console.log(`    • Streaks: mean=${nf(team.streaks.mean)}, min=${nf(team.streaks.min)}, max=${nf(team.streaks.max)}`);
-      console.log(`    • Events: mean=${nf(team.events.mean)}, min=${nf(team.events.min)}, max=${nf(team.events.max)}`);
-      console.log(`    • Engagement: mean=${nf(team.engagement.mean)}, min=${nf(team.engagement.min)}, max=${nf(team.engagement.max)}`);
+      console.log(`Team ${team.team}: Players=${nf(team.players)}, Points avg=${nf(team.points.mean)}, Activity avg=${nf(team.actives.mean)}, Streak avg=${nf(team.streaks.mean)}, Events avg=${nf(team.events.mean)}`);
     });
-    // Teams composition (optional, uncomment if needed)
-    // console.log('\nTeams composition:');
-    // teamsByGroup.forEach((group: any) => {
-    //   console.log(`Team ${group.team}: ${group.players.join(', ')}`);
-    // });
-    console.log('\n==============================');
+    console.log('============================');
   } catch (err) {
     console.error('Error:', err);
   }
