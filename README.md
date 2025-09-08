@@ -123,3 +123,13 @@ The following assumptions are made in the team balancing and aggregation process
 
 ## Time-Spent
 # 02:30
+
+## Databases (Google sheets)
+# Messages: 
+- https://docs.google.com/spreadsheets/d/1STJbjsaIyxypxbZ41mk55W9KP6eh0qX8/edit?usp=sharing&ouid=106152636381112682726&rtpof=true&sd=true
+# Messages: 
+- https://docs.google.com/spreadsheets/d/1Joasxcrn2AoGZRLJKe7Ub1beSQUSUE885hS_y9sy9aU/edit?usp=sharing
+# Spend: 
+- https://docs.google.com/spreadsheets/d/1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90/edit?usp=sharing
+# Events: 
+- https://docs.google.com/spreadsheets/d/19LcNa3r46-y_d0q4hWgytBJTenPKEj-yODY_wARAz2A/edit?usp=sharing
