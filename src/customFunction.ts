@@ -326,8 +326,12 @@ export async function customFunction(options: CustomOptions = {}) {
   // Devolver equipos en formato agrupado por equipo para mejor legibilidad
   const teamsByGroup = groups.map((group, idx) => ({
     team: idx + 1,
-    players: group.map(user => user['player_id'])
+    players: group.map(user => user['player_id']),
+    playersDetailed: group // array of user objects
   }));
 
-  return { teams: result, teamsByGroup, usedSeed, stats };
+  // allUsers: all merged user objects
+  const allUsers = users;
+
+  return { teams: result, teamsByGroup, usedSeed, stats, allUsers };
 }
