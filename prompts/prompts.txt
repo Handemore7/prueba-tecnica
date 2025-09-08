@@ -1,0 +1,8 @@
+first commit:
+Hola, quiero que crees un programa en node.js con typescript, el programa va a correr una función llamada customFunction, por ahora hagamos que esa función simplemente sume 2 valores que el usuario introdujo junto al comando para correr el codigo
+
+config commits:
+- Voy a subir esto a un repo de github, crea todos los archivos base necesarios
+- Quiero que el codigo para correr el script sea "npm start [variable1] [variable2]"
+- Listo, ya está trayendo toda la info de todos los archivos de manera correcta, quiero que en las propiedades que vengan vacias tengamos un manejador de potenciales errores para evitar problemas de formatos o cosas asi, piensa en la mejor solución y hazla sin pedirme permiso
+-
