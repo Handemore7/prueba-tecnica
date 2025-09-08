@@ -1,19 +1,33 @@
 import { customFunction } from './customFunction';
 
-function main() {
+function parseArgs(args: string[]) {
+  const options: any = {};
+  args.forEach(arg => {
+    const [key, value] = arg.split('=');
+    if (key && value !== undefined) {
+      if (!isNaN(Number(value))) {
+        options[key] = Number(value);
+      } else {
+        options[key] = value;
+      }
+    }
+  });
+  return options;
+}
+
+async function main() {
   const args = process.argv.slice(2);
-  if (args.length < 2) {
-    console.error('Por favor, introduce dos números como argumentos.');
-    process.exit(1);
+  const options = parseArgs(args);
+  try {
+    const { teams, usedSeed } = await customFunction(options);
+    console.log('Equipos generados:');
+    teams.forEach((item: any) => {
+      console.log(`player_id: ${item.player_id}, team: ${item.team}`);
+    });
+    console.log('Seed usado:', usedSeed);
+  } catch (err) {
+    console.error('Error:', err);
   }
-  const a = Number(args[0]);
-  const b = Number(args[1]);
-  if (isNaN(a) || isNaN(b)) {
-    console.error('Ambos argumentos deben ser números.');
-    process.exit(1);
-  }
-  const resultado = customFunction(a, b);
-  console.log(`El resultado de la suma es: ${resultado}`);
 }
 
 main();
