@@ -34,6 +34,10 @@ Follow these steps to use the tool—no technical knowledge required:
    ```sh
    npm start seed=123 teamsqty=3 property=historical_points_earned
    ```
+   or just (to generate with full random parameters)
+   ```sh
+   npm start
+   ```
    - `seed`: Enter any number so the results are always the same if you repeat that number.
    - `teamsqty`: Enter how many teams you want to create.
    - `property`: Enter the name of the property you want to use to balance the teams (for example, `historical_points_earned`).
