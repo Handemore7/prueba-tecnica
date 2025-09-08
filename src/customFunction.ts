@@ -94,5 +94,21 @@ export async function customFunction(options: CustomOptions = {}) {
     });
   });
 
-  return { teams: result, usedSeed };
+  // Estadísticas generales
+  const stats = {
+    total_teams: groups.length,
+    total_players: result.length,
+    teams: groups.map((group, idx) => {
+      const propSum = group.reduce((acc, user) => acc + (typeof user[propiedad] === 'number' ? (user[propiedad] as number) : 0), 0);
+      const propAvg = group.length > 0 ? propSum / group.length : 0;
+      return {
+        team: idx + 1,
+        players: group.length,
+        sum: propSum,
+        avg: propAvg
+      };
+    })
+  };
+
+  return { teams: result, usedSeed, stats };
 }
