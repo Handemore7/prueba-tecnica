@@ -30,9 +30,9 @@ export interface CustomOptions {
 }
 
 
-// sheetId: el ID de la hoja de Google Sheets (de la URL)
-// range: el rango a leer, por ejemplo 'Sheet1!A1:A100'
-// Por defecto, asume que la hoja tiene encabezados en la primera fila y los datos empiezan en la segunda
+// sheetId: Google Sheets document ID (from the URL)
+// range: range to read, e.g. 'Sheet1!A1:A100'
+// By default, assumes the sheet has headers in the first row and data starts in the second
 export async function customFunction(options: CustomOptions = {}) {
   const {
     seed,
@@ -45,39 +45,39 @@ export async function customFunction(options: CustomOptions = {}) {
       { sheetId: '14ecaqMY5Rq-fVn1eebS6Yq5GUyjfXDuUm-kn-tt4XpM', range: 'Sheet1!A2:Z' }
     ]
   } = options;
-  // Autenticación con Google
+  // Google authentication
   const auth = new google.auth.GoogleAuth({
     keyFile: 'credentials.json',
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
   const sheetsApi = google.sheets({ version: 'v4', auth });
 
-  // Leer y unir usuarios de todas las hojas por player_id
+  // Read and merge users from all sheets by player_id
   const userMap: { [playerId: string]: User } = {};
-  let documentosLeidos = 0;
+  let sheetsRead = 0;
   for (const src of sheets) {
     try {
-      // Obtener el nombre real de la primera hoja
+      // Get the real name of the first sheet
       const meta = await sheetsApi.spreadsheets.get({ spreadsheetId: src.sheetId });
       const sheetName = meta.data.sheets?.[0]?.properties?.title;
-      if (!sheetName) throw new Error('No se pudo obtener el nombre de la hoja');
-      // Leer todo el rango incluyendo encabezado
+      if (!sheetName) throw new Error('Could not get sheet name');
+      // Read the whole range including header
       const res = await sheetsApi.spreadsheets.values.get({ spreadsheetId: src.sheetId, range: `${sheetName}!A1:Z` });
       const allRows = res.data.values || [];
-      if (allRows.length < 2) continue; // Debe haber al menos encabezado y una fila de datos
+      if (allRows.length < 2) continue; // Must have at least header and one data row
       const headers = allRows[0];
       const rows = allRows.slice(1);
-      documentosLeidos++;
+      sheetsRead++;
       if (headers) {
         rows.forEach(row => {
           const user: User = {};
           headers.forEach((h, i) => {
             let val = row[i];
-            // Si la celda está vacía o es undefined, asignar null
+            // If cell is empty or undefined, assign null
             if (val === undefined || val === '') {
               user[h] = null;
             } else if (!isNaN(Number(val))) {
-              // Si es un número válido, convertirlo
+              // If it's a valid number, convert
               user[h] = Number(val);
             } else {
               user[h] = val;
@@ -92,7 +92,7 @@ export async function customFunction(options: CustomOptions = {}) {
       }
     } catch (err) {
       const msg = (err && typeof err === 'object' && 'message' in err) ? (err as any).message : String(err);
-      console.error(`Error leyendo archivo sheetId=${src.sheetId}:`, msg);
+      console.error(`Error reading sheetId=${src.sheetId}:`, msg);
       continue;
     }
   }
@@ -109,18 +109,18 @@ export async function customFunction(options: CustomOptions = {}) {
     shuffled[j] = temp;
   }
 
-  // Algoritmo snake draft con control estricto de cantidad de jugadores por equipo
-  // 1. Ordenar por propiedad (mayor a menor)
+  // Snake draft algorithm with strict team size control
+  // 1. Sort by property (descending)
   const sorted = [...users].sort((a, b) => {
     const aVal = typeof a[propiedad] === 'number' ? (a[propiedad] as number) : 0;
     const bVal = typeof b[propiedad] === 'number' ? (b[propiedad] as number) : 0;
     return bVal - aVal;
   });
-  // 2. Calcular la cantidad ideal de jugadores por equipo
+  // 2. Calculate ideal number of players per team
   const totalPlayers = sorted.length;
   const basePlayers = Math.floor(totalPlayers / teamsqty);
   const extra = totalPlayers % teamsqty;
-  // 3. Asignar a cada equipo su cupo máximo
+  // 3. Assign each team its max slots
   const teamLimits = Array.from({ length: teamsqty }, (_, i) => basePlayers + (i < extra ? 1 : 0));
   const groups: User[][] = Array.from({ length: teamsqty }, () => []);
   let direction = 1;
@@ -158,7 +158,7 @@ export async function customFunction(options: CustomOptions = {}) {
     }
   }
 
-  // Construir resultado: lista de jugadores con su equipo asignado
+  // Build result: list of players with assigned team
   const result: { player_id: string | number; team: number }[] = [];
   groups.forEach((group, idx) => {
     group.forEach(user => {
@@ -169,19 +169,19 @@ export async function customFunction(options: CustomOptions = {}) {
     });
   });
 
-  // Estadísticas generales
-  // Calcular suma total de la propiedad
+  // General statistics
+  // Calculate total sum of the property
   const totalProp = result.reduce((acc, user) => {
     const found = users.find(u => u['player_id'] === user.player_id);
     return acc + (found && typeof found[propiedad] === 'number' ? (found[propiedad] as number) : 0);
   }, 0);
 
-  // Lista de propiedades únicas (excluyendo player_id)
+  // List of unique properties (excluding player_id)
   const allProps = new Set<string>();
   users.forEach(u => Object.keys(u).forEach(k => allProps.add(k)));
   allProps.delete('player_id');
 
-  // Utilidades estadísticas
+  // Statistics utilities
   function mean(arr: number[]) {
     return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
   }
@@ -206,7 +206,7 @@ export async function customFunction(options: CustomOptions = {}) {
     return arr.length ? Math.max(...arr) : 0;
   }
 
-  // Estadísticas globales
+  // Global statistics
   const pointsArr = users.map(u => typeof u['historical_points_earned'] === 'number' ? u['historical_points_earned'] as number : 0);
   const activesArr = users.map(u => typeof u['days_active_last_30'] === 'number' ? u['days_active_last_30'] as number : 0);
   const streakArr = users.map(u => typeof u['current_streak_value'] === 'number' ? u['current_streak_value'] as number : 0);
@@ -224,7 +224,7 @@ export async function customFunction(options: CustomOptions = {}) {
     return [...arr].sort((a, b) => a - b).slice(0, n);
   }
 
-  // Por equipo
+  // Per team
   const teamStats = groups.map((group, idx) => {
     const points = group.map(u => typeof u['historical_points_earned'] === 'number' ? u['historical_points_earned'] as number : 0);
     const actives = group.map(u => typeof u['days_active_last_30'] === 'number' ? u['days_active_last_30'] as number : 0);
@@ -268,10 +268,10 @@ export async function customFunction(options: CustomOptions = {}) {
   const stats = {
     total_teams: groups.length,
     total_players: result.length,
-    promedio_general: groups.length > 0 ? Math.round(result.length / groups.length) : 0,
-    promedio_general_puntaje: result.length > 0 ? Math.round(totalProp / result.length) : 0,
-    documentos_leidos: documentosLeidos,
-    // Globales
+    average_team_size: groups.length > 0 ? Math.round(result.length / groups.length) : 0,
+    average_team_score: result.length > 0 ? Math.round(totalProp / result.length) : 0,
+    sheets_read: sheetsRead,
+    // Global
     points: {
       mean: Math.round(mean(pointsArr)),
       median: Math.round(median(pointsArr)),
@@ -320,7 +320,7 @@ export async function customFunction(options: CustomOptions = {}) {
     // Outliers
     top5_points: topN(pointsArr),
     bottom5_points: bottomN(pointsArr),
-    // Puedes agregar más outliers si lo deseas
+    // Add more outliers if needed
   };
 
   // Devolver equipos en formato agrupado por equipo para mejor legibilidad

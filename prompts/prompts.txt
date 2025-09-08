@@ -1,8 +1,16 @@
-first commit:
-Hola, quiero que crees un programa en node.js con typescript, el programa va a correr una función llamada customFunction, por ahora hagamos que esa función simplemente sume 2 valores que el usuario introdujo junto al comando para correr el codigo
+First prompt:
+Hello, I would like you to create a Node.js program using TypeScript. The program should run a function called customFunction. For now, let’s make this function simply sum two values provided by the user as command-line arguments.
 
-config commits:
-- Voy a subir esto a un repo de github, crea todos los archivos base necesarios
-- Quiero que el codigo para correr el script sea "npm start [variable1] [variable2]"
-- Listo, ya está trayendo toda la info de todos los archivos de manera correcta, quiero que en las propiedades que vengan vacias tengamos un manejador de potenciales errores para evitar problemas de formatos o cosas asi, piensa en la mejor solución y hazla sin pedirme permiso
--
+Configuration prompts:
+- I will upload this to a GitHub repository. Please create all the necessary base files (README, .gitignore, etc.).
+- The script should be executed with: "npm start [variable1] [variable2]"
+- Once all the data from the files is being retrieved correctly, ensure that any empty properties are handled gracefully to avoid formatting or type errors. Choose the best solution and implement it without asking for further permission.
+- Next, let’s make customFunction more complex: user data will come from 4 different Google Sheets. You need to fetch and merge all the information, using player_id as the unique key to join data from all sheets.
+- Add a new property called "Average team score" (total property value / number of players). All final statistics should be displayed as integers.
+- The information will now be sourced directly from a Google Sheets file. Here is the link—please help set up the connection: https://docs.google.com/spreadsheets/d/14ecaqMY5Rq-fVn1eebS6Yq5GUyjfXDuUm-kn-tt4XpM/edit?gid=0#gid=0
+
+Main prompt:
+Create a table to be used as a placeholder for modifying the custom formula.
+The table must have a property called "team" with values like "1".
+The custom formula should read the data from this table (in CSV format) and create 2 user groups. Both groups should be as balanced as possible (using the "team" property as a reference).
+The script must return random but consistent results. That is, the function should accept a parameter called "seed" and ensure that using the same seed always produces the same result. If no seed is provided, generate a random one and display it in the output.

@@ -1,28 +1,57 @@
-# prueba-tecnica
 
-Este proyecto es un ejemplo en Node.js con TypeScript. Suma dos números proporcionados como argumentos al ejecutar el programa.
+# Team Balancer CLI
 
-# CONTEXTO
+This project is a Node.js + TypeScript CLI tool to assign players into balanced teams for a new season, using data from multiple Google Sheets.
 
-Gyld runs on seasons. At the start of each season, players can be sorted into new teams. These teams become part of the streamer’s community identity for the season, competing together in events and rituals.
-When we reshuffle, we need the outcome to feel balanced and make sense to the community. Teams should be roughly even in size, and the distribution of players should reflect engagement in a way that won’t feel arbitrary if players compared notes.
-Your job is to design a simple system to reassign players into T new teams for a new season. The assignment should be deterministic and reproducible (i.e. same input → same output). How you define “balanced” is up to you, but the output should look reasonable if shown to real players.
+## Context
 
-# GOALD
+Gyld runs on seasons. At the start of each season, players are sorted into new teams. Teams should be balanced in size and engagement, and the assignment should be deterministic (same input → same output).
 
-Reassign players into T teams for a new season so teams are balanced and the outcome feels reasonable to the community.
+## Goal
 
-## Uso
+Reassign players into T teams for a new season so teams are balanced and the outcome feels fair and reasonable to the community.
 
-1. Compila el proyecto:
+## Usage
+
+1. Build the project:
    ```sh
    npx tsc
    ```
-2. Ejecuta el programa:
+2. Run the CLI:
    ```sh
    npm start seed=123 teamsqty=3 propiedad=historical_points_earned
    ```
-   Cambia las propiedades por los valores que quieras usar:
-   - seed: Pon un valor aleatorio, si lo vuelves a usar poodrás ver la misma información de la simulación
-   - teamsqty: Cantidad de equipos
-   - propiedad: Nombre de la propiedad que se va a usar como referencia para la comparación y organización de usuarios
+   - `seed`: Any number for reproducible results
+   - `teamsqty`: Number of teams
+   - `propiedad`: Property to use for balancing (e.g. `historical_points_earned`)
+
+## Features
+
+- Reads player data from multiple Google Sheets (see `src/customFunction.ts` for configuration)
+- Merges player info by `player_id`
+- Balances teams using a deterministic algorithm
+- Outputs detailed statistics (global and per team)
+- Handles missing or empty data gracefully
+
+## Requirements
+
+- Node.js
+- Google service account credentials (see Google Sheets API docs)
+
+## Example Output
+
+```
+Generated teams (readable format):
+
+Key statistics:
+Number of teams: 3
+Total number of players: 200
+Average team size: 67%
+Average team score: 2,872 points
+Sheets successfully read: 4
+--- Historical points ---
+Mean: 2,800, Median: 2,850, Min: 1,000, Max: 4,000, Stddev: 500
+Top 5 points: [4000, 3900, 3800, 3700, 3600]
+Bottom 5 points: [1000, 1100, 1200, 1300, 1400]
+... (more stats)
+```
