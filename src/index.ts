@@ -16,7 +16,7 @@ function parseArgs(args: string[]) {
 }
 
 
-function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[], teamsByGroup?: any[]) {
+function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[], teamsByGroup?: any[], warnings?: string[]) {
   const nf = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
   console.log('=== TEAM BALANCER SUMMARY ===');
   console.log(`Number of teams: ${nf(stats.total_teams)}`);
@@ -24,16 +24,19 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
   console.log(`Average team size: ${nf(stats.average_team_size)}%`);
   console.log(`Average team score: ${nf(stats.average_team_score)} points`);
   console.log(`Sheets successfully read: ${stats.sheets_read}`);
+
+  // Only print historical points and global averages once
   console.log('\n--- Historical points ---');
   console.log(`Mean: ${nf(stats.points.mean)}, Median: ${nf(stats.points.median)}, Min: ${nf(stats.points.min)}, Max: ${nf(stats.points.max)}, Stddev: ${nf(stats.points.stddev)}`);
   console.log(`Top 5 points: [${stats.points.top5.join(', ')}]`);
   console.log(`Bottom 5 points: [${stats.points.bottom5.join(', ')}]`);
-  // Add global averages for other metrics
+
   console.log('\n--- Global Averages ---');
   console.log(`Points: mean=${nf(stats.points.mean)}, median=${nf(stats.points.median)}, min=${nf(stats.points.min)}, max=${nf(stats.points.max)}, stddev=${nf(stats.points.stddev)}`);
   console.log(`Activity (30d): mean=${nf(stats.actives.mean)}, min=${nf(stats.actives.min)}, max=${nf(stats.actives.max)}`);
   console.log(`Streaks: mean=${nf(stats.streaks.mean)}, min=${nf(stats.streaks.min)}, max=${nf(stats.streaks.max)}`);
   console.log(`Events: mean=${nf(stats.events.mean)}, min=${nf(stats.events.min)}, max=${nf(stats.events.max)}`);
+
   // Add per-team comparison
   console.log('\n--- Per-Team Comparison ---');
   stats.team_stats.forEach((team: any) => {
@@ -125,6 +128,13 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
     console.log('No MVPs found for any team. [DEBUG] teamsByGroup.length:', (teamsByGroup || []).length, 'allUsers.length:', (allUsers || []).length);
     console.log('[DEBUG] Sample allUsers:', JSON.stringify(debugUsers, null, 2));
   }
+  if (warnings && warnings.length > 0) {
+    console.log('\n--- DATA WARNINGS ---');
+    warnings.slice(0, 10).forEach(w => console.log(w));
+    if (warnings.length > 10) {
+      console.log(`...and ${warnings.length - 10} more warnings.`);
+    }
+  }
   console.log('\n============================');
 }
 
@@ -141,13 +151,13 @@ async function main() {
     process.stdout.write('Generating team balance report' + '.'.repeat(dots));
   }, 400);
   try {
-    const { usedSeed, stats, allUsers, teamsByGroup } = await customFunction(options);
+    const { usedSeed, stats, allUsers, teamsByGroup, warnings } = await customFunction(options);
     if (loadingInterval) {
       clearInterval(loadingInterval);
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
     }
-    printTeamBalancerSummary(stats, usedSeed, allUsers, teamsByGroup);
+    printTeamBalancerSummary(stats, usedSeed, allUsers, teamsByGroup, warnings);
   } catch (err) {
     if (loadingInterval) {
       clearInterval(loadingInterval);

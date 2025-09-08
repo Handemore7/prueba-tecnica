@@ -1,5 +1,3 @@
-
-
 import { google } from 'googleapis';
 import * as fs from 'fs';
 
@@ -52,6 +50,9 @@ export async function customFunction(options: CustomOptions = {}) {
   });
   const sheetsApi = google.sheets({ version: 'v4', auth });
 
+  // Validation warnings
+  const warnings: string[] = [];
+
   // Read and merge users from all sheets by player_id
   const userMap: { [playerId: string]: User } = {};
   let sheetsRead = 0;
@@ -69,24 +70,51 @@ export async function customFunction(options: CustomOptions = {}) {
       const rows = allRows.slice(1);
       sheetsRead++;
       if (headers) {
-        rows.forEach(row => {
+        rows.forEach((row, rowIdx) => {
           const user: User = {};
           headers.forEach((h, i) => {
             let val = row[i];
             // If cell is empty or undefined, assign null
             if (val === undefined || val === '') {
               user[h] = null;
+              // Warn if key stat is missing
+                    if ([
+                      'player_id',
+                      'historical_points_earned',
+                      'historical_points_spent',
+                      'historical_events_participated',
+                      'historical_event_engagements',
+                      'historical_messages_sent',
+                      'days_active_last_30',
+                      'current_streak_value'
+                    ].includes(h)) {
+                warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Missing value for '${h}'.`);
+              }
             } else if (!isNaN(Number(val))) {
               // If it's a valid number, convert
               user[h] = Number(val);
             } else {
               user[h] = val;
+              // Warn if key stat is not a number where expected
+                if ([
+                  'historical_points_earned',
+                  'historical_points_spent',
+                  'historical_events_participated',
+                  'historical_event_engagements',
+                  'historical_messages_sent',
+                  'days_active_last_30',
+                  'current_streak_value'
+                ].includes(h)) {
+                warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Invalid (non-numeric) value for '${h}': '${val}'.`);
+              }
             }
           });
           const playerId = user['player_id'];
-          if (playerId !== undefined && playerId !== '') {
+          if (playerId !== undefined && playerId !== '' && playerId !== null) {
             const key = String(playerId);
             userMap[key] = { ...userMap[key], ...user };
+          } else {
+            warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Missing or invalid player_id.`);
           }
         });
       }
@@ -333,5 +361,5 @@ export async function customFunction(options: CustomOptions = {}) {
   // allUsers: all merged user objects
   const allUsers = users;
 
-  return { teams: result, teamsByGroup, usedSeed, stats, allUsers };
+  return { teams: result, teamsByGroup, usedSeed, stats, allUsers, warnings };
 }
