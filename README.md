@@ -1,27 +1,3 @@
-
-## Troubleshooting
-
-Here are some common issues and how to solve them:
-
-- **'npx' or 'npm' command not found:**
-   - Solution: Make sure Node.js is installed. Download it from https://nodejs.org/ and restart your terminal.
-
-- **Error: Cannot read Google credentials file:**
-   - Solution: Check that the `credentials.json` file is in the project root and that your service account has access to the Google Sheets.
-
-- **Error: This operation is not supported for this document:**
-   - Solution: Make sure the Google Sheets file is shared with your service account and that the sheet has data and headers in the first row.
-
-- **No teams or players appear in the result:**
-   - Solution: Check that your Google Sheets files have valid data and that the `player_id` property is present in all rows.
-
-- **The program shows nothing or closes unexpectedly:**
-   - Solution: Try running the command again and make sure you followed all installation and execution steps correctly.
-
-If you have another problem, check the error messages in the terminal or consult the official Node.js and Google Sheets API documentation.
-
-
-
 # Team Balancer CLI
 
 This project is a CLI tool developed in Node.js and TypeScript to assign players to balanced teams at the start of a new season, using data from multiple Google Sheets.
@@ -101,6 +77,16 @@ Bottom 5 points: [1000, 1100, 1200, 1300, 1400]
 ## Notes
 A team balancing algorithm was implemented using Google Sheets files as the database, with all player properties. The algorithm groups users into a chosen number of teams, preserving balance across key metrics to avoid possible user frustration with team assignments.
 
+## Maintenance & Updates
+
+- Keep your dependencies up to date (`npm update`).
+- Regularly review your Google Sheets for data consistency.
+- If you change the structure of your sheets, update the code and documentation accordingly.
+
+## Testing
+
+For production or critical use, consider adding automated tests (e.g., with Jest) for the team balancing and validation logic.
+
 -## Assumptions
 
 The following assumptions are made in the team balancing and aggregation process:
@@ -133,3 +119,61 @@ The following assumptions are made in the team balancing and aggregation process
 - https://docs.google.com/spreadsheets/d/1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90/edit?usp=sharing
 # Events: 
 - https://docs.google.com/spreadsheets/d/19LcNa3r46-y_d0q4hWgytBJTenPKEj-yODY_wARAz2A/edit?usp=sharing
+
+# Security
+
+- Never commit or share your `credentials.json` file. Treat it as a secret.
+- Restrict your Google service account to only the necessary Google Sheets.
+- Do not share your seed or sensitive data in public outputs.
+- If you use this tool in a shared environment, validate all input arguments to avoid command injection.
+
+## Properties Reference
+
+| Property                        | Description                                 |
+|----------------------------------|---------------------------------------------|
+| player_id                       | Unique user identifier                      |
+| historical_points_earned        | Points earned by the user                   |
+| historical_points_spent         | Points spent by the user                    |
+| historical_events_participated  | Number of events participated               |
+| historical_event_engagements    | Number of event engagements                 |
+| historical_messages_sent        | Number of messages sent                     |
+| days_active_last_30             | Days active in the last 30 days             |
+| current_streak_value            | Current activity streak                     |
+
+## Example Data Warnings
+
+If the program detects missing or invalid data, it will show warnings like:
+
+```
+--- DATA WARNINGS ---
+Sheet 1Joasxcrn2AoGZRLJKe7Ub1beSQUSUE885hS_y9sy9aU row 5: Missing value for 'player_id'.
+Sheet 1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90 row 12: Invalid (non-numeric) value for 'historical_points_earned': 'abc'.
+...and 3 more warnings.
+```
+
+## How to add new properties or sheets
+
+- To add a new property, ensure it is present in all Google Sheets and update the `keyStats` array in `src/index.ts` if you want it to appear in MVPs or stats.
+- To add a new sheet, add its `sheetId` and range to the `sheets` array in `src/customFunction.ts`.
+
+
+## Troubleshooting
+
+Here are some common issues and how to solve them:
+
+- **'npx' or 'npm' command not found:**
+   - Solution: Make sure Node.js is installed. Download it from https://nodejs.org/ and restart your terminal.
+
+- **Error: Cannot read Google credentials file:**
+   - Solution: Check that the `credentials.json` file is in the project root and that your service account has access to the Google Sheets.
+
+- **Error: This operation is not supported for this document:**
+   - Solution: Make sure the Google Sheets file is shared with your service account and that the sheet has data and headers in the first row.
+
+- **No teams or players appear in the result:**
+   - Solution: Check that your Google Sheets files have valid data and that the `player_id` property is present in all rows.
+
+- **The program shows nothing or closes unexpectedly:**
+   - Solution: Try running the command again and make sure you followed all installation and execution steps correctly.
+
+If you have another problem, check the error messages in the terminal or consult the official Node.js and Google Sheets API documentation.

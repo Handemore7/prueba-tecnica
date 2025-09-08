@@ -1,17 +1,24 @@
 import { customFunction } from './customFunction';
 
-function parseArgs(args: string[]) {
-  const options: any = {};
-  args.forEach(arg => {
+interface CLIOptions {
+  seed?: number;
+  teamsqty?: number;
+  property?: string;
+  [key: string]: string | number | undefined;
+}
+
+function parseArgs(args: string[]): CLIOptions {
+  const options: CLIOptions = {};
+  for (const arg of args) {
     const [key, value] = arg.split('=');
-    if (key && value !== undefined) {
-      if (!isNaN(Number(value))) {
-        options[key] = Number(value);
-      } else {
-        options[key] = value;
-      }
+    if (!key || value === undefined) continue;
+    if (key === 'seed' || key === 'teamsqty') {
+      const num = Number(value);
+      if (!isNaN(num)) options[key] = num;
+    } else {
+      options[key] = value;
     }
-  });
+  }
   return options;
 }
 
@@ -166,7 +173,13 @@ async function main() {
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
     }
-    console.error('Error:', err);
+    console.error('\n[ERROR] Something went wrong while generating the report.');
+    if (err && typeof err === 'object' && 'message' in err) {
+      console.error('Details:', (err as any).message);
+    } else {
+      console.error('Details:', err);
+    }
+    console.error('Please check your Google Sheets, credentials, and input arguments.');
   }
 }
 
