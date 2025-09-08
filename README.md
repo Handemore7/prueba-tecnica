@@ -57,31 +57,65 @@ That's it! The program will display the generated teams and useful statistics to
 ## Example output
 
 ```
-Generated teams (readable format):
-
-Key statistics:
-Number of teams: 3
+=== TEAM BALANCER SUMMARY ===
+Seed: 150273311
+Property: historical_points_earned
+Number of teams: 2
 Total number of players: 200
-Average team size: 67%
+Average team size: 100%
 Average team score: 2,872 points
 Sheets successfully read: 4
+
 --- Historical points ---
-Mean: 2,800, Median: 2,850, Min: 1,000, Max: 4,000, Stddev: 500
-Top 5 points: [4000, 3900, 3800, 3700, 3600]
-Bottom 5 points: [1000, 1100, 1200, 1300, 1400]
+Mean: 2,872, Median: 418, Min: 0, Max: 19,141, Stddev: 5,216
+Top 5 points: [19141, 19091, 18912, 18675, 18340]
+Bottom 5 points: [0, 0, 0, 0, 14]
+
+--- Global Averages ---
+Points: mean=2,872, median=418, min=0, max=19,141, stddev=5,216
+Activity (30d): mean=14, min=0, max=30
+Streaks: mean=7, min=0, max=29
+Events: mean=12, min=0, max=29
+
+--- Per-Team Comparison ---
+Team 1: Players=100, Points avg=2,882, Activity avg=15, Streak avg=8, Events avg=12
+Team 2: Players=100, Points avg=2,862, Activity avg=14, Streak avg=6, Events avg=12
+
+--- TOP 2 MVPs (one per team, best in key stats) ---
+Team 1 MVP: User 18 — Most Points Earned: 19,141
+Team 2 MVP: User 25 — Most Points Earned: 19,091
+
 ... (more statistics)
 ```
 
+## Time-Spent
+# 02:30
 
 
-## Notes
+# Notes
 A team balancing algorithm was implemented using Google Sheets files as the database, with all player properties. The algorithm groups users into a chosen number of teams, preserving balance across key metrics to avoid possible user frustration with team assignments.
+
+# Databases (Google sheets)
+## Messages: 
+- https://docs.google.com/spreadsheets/d/1STJbjsaIyxypxbZ41mk55W9KP6eh0qX8/edit?usp=sharing&ouid=106152636381112682726&rtpof=true&sd=true
+## Messages: 
+- https://docs.google.com/spreadsheets/d/1Joasxcrn2AoGZRLJKe7Ub1beSQUSUE885hS_y9sy9aU/edit?usp=sharing
+## Spend: 
+- https://docs.google.com/spreadsheets/d/1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90/edit?usp=sharing
+## Events: 
+- https://docs.google.com/spreadsheets/d/19LcNa3r46-y_d0q4hWgytBJTenPKEj-yODY_wARAz2A/edit?usp=sharing
 
 ## Maintenance & Updates
 
 - Keep your dependencies up to date (`npm update`).
 - Regularly review your Google Sheets for data consistency.
 - If you change the structure of your sheets, update the code and documentation accordingly.
+
+## Possible improvement features:
+- A learning model that, based on user history, can continuously improve team balancing
+- One key modeling choice was to use a deterministic "snake draft" algorithm for team assignment, combined with a configurable seed. This ensures that teams are as balanced as possible by the chosen property (e.g., points or engagement), and that the same input always produces the same output—making the process fair, reproducible, and transparent for the community.
+- A graphical way to view the information, making it easier for users to trust the balancing system
+- Some features were left out, such as modifying Google Sheets directly from here, a system to constantly watch for changes in Google Sheets and update information, and a testing system to measure the effectiveness of the team balancing
 
 ## Testing
 
@@ -100,25 +134,6 @@ The following assumptions are made in the team balancing and aggregation process
 - The seed value ensures deterministic (repeatable) team assignment.
 - No direct modification is made to the Google Sheets; all processing is read-only.
 - The algorithm aims for balance by the chosen property, but does not guarantee perfect equality due to data distribution.
-
-## Possible improvement features:
-- A learning model that, based on user history, can continuously improve team balancing
-- One key modeling choice was to use a deterministic "snake draft" algorithm for team assignment, combined with a configurable seed. This ensures that teams are as balanced as possible by the chosen property (e.g., points or engagement), and that the same input always produces the same output—making the process fair, reproducible, and transparent for the community.
-- A graphical way to view the information, making it easier for users to trust the balancing system
-- Some features were left out, such as modifying Google Sheets directly from here, a system to constantly watch for changes in Google Sheets and update information, and a testing system to measure the effectiveness of the team balancing
-
-## Time-Spent
-# 02:30
-
-## Databases (Google sheets)
-# Messages: 
-- https://docs.google.com/spreadsheets/d/1STJbjsaIyxypxbZ41mk55W9KP6eh0qX8/edit?usp=sharing&ouid=106152636381112682726&rtpof=true&sd=true
-# Messages: 
-- https://docs.google.com/spreadsheets/d/1Joasxcrn2AoGZRLJKe7Ub1beSQUSUE885hS_y9sy9aU/edit?usp=sharing
-# Spend: 
-- https://docs.google.com/spreadsheets/d/1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90/edit?usp=sharing
-# Events: 
-- https://docs.google.com/spreadsheets/d/19LcNa3r46-y_d0q4hWgytBJTenPKEj-yODY_wARAz2A/edit?usp=sharing
 
 # Security
 
