@@ -69,18 +69,53 @@ export async function customFunction(options: CustomOptions = {}) {
     shuffled[j] = temp;
   }
 
-  // Balancear los equipos para que la suma de la propiedad indicada sea lo más pareja posible
+  // Algoritmo snake draft con control estricto de cantidad de jugadores por equipo
+  // 1. Ordenar por propiedad (mayor a menor)
+  const sorted = [...users].sort((a, b) => {
+    const aVal = typeof a[propiedad] === 'number' ? (a[propiedad] as number) : 0;
+    const bVal = typeof b[propiedad] === 'number' ? (b[propiedad] as number) : 0;
+    return bVal - aVal;
+  });
+  // 2. Calcular la cantidad ideal de jugadores por equipo
+  const totalPlayers = sorted.length;
+  const basePlayers = Math.floor(totalPlayers / teamsqty);
+  const extra = totalPlayers % teamsqty;
+  // 3. Asignar a cada equipo su cupo máximo
+  const teamLimits = Array.from({ length: teamsqty }, (_, i) => basePlayers + (i < extra ? 1 : 0));
   const groups: User[][] = Array.from({ length: teamsqty }, () => []);
-  const sums: number[] = Array.from({ length: teamsqty }, () => 0);
-  for (const user of shuffled) {
-    // Buscar el grupo con menor suma
-    let minIdx: number = 0;
-    for (let i = 1; i < teamsqty; i++) {
-      if ((sums[i] ?? Infinity) < (sums[minIdx] ?? Infinity)) minIdx = i;
+  let direction = 1;
+  let idx = 0;
+  for (const user of sorted) {
+    // Buscar el siguiente equipo con cupo disponible
+  while ((groups[idx]?.length ?? 0) >= (teamLimits[idx] ?? 0)) {
+      if (direction === 1) {
+        idx++;
+        if (idx === teamsqty) {
+          direction = -1;
+          idx = teamsqty - 1;
+        }
+      } else {
+        idx--;
+        if (idx < 0) {
+          direction = 1;
+          idx = 0;
+        }
+      }
     }
-    (groups[minIdx]!).push(user);
-    const val = typeof user[propiedad] === 'number' ? (user[propiedad] as number) : 0;
-    sums[minIdx]! += val;
+    groups[idx]!.push(user);
+    if (direction === 1) {
+      idx++;
+      if (idx === teamsqty) {
+        direction = -1;
+        idx = teamsqty - 1;
+      }
+    } else {
+      idx--;
+      if (idx < 0) {
+        direction = 1;
+        idx = 0;
+      }
+    }
   }
 
   // Construir resultado: lista de jugadores con su equipo asignado
@@ -95,20 +130,34 @@ export async function customFunction(options: CustomOptions = {}) {
   });
 
   // Estadísticas generales
+  // Calcular suma total de la propiedad
+  const totalProp = result.reduce((acc, user) => {
+    const found = users.find(u => u['player_id'] === user.player_id);
+    return acc + (found && typeof found[propiedad] === 'number' ? (found[propiedad] as number) : 0);
+  }, 0);
+
   const stats = {
     total_teams: groups.length,
     total_players: result.length,
+    promedio_general: groups.length > 0 ? Math.round(result.length / groups.length) : 0,
+    promedio_general_puntaje: result.length > 0 ? Math.round(totalProp / result.length) : 0,
     teams: groups.map((group, idx) => {
       const propSum = group.reduce((acc, user) => acc + (typeof user[propiedad] === 'number' ? (user[propiedad] as number) : 0), 0);
-      const propAvg = group.length > 0 ? propSum / group.length : 0;
+      const propAvg = group.length > 0 ? Math.round(propSum / group.length) : 0;
       return {
         team: idx + 1,
         players: group.length,
-        sum: propSum,
+        sum: Math.round(propSum),
         avg: propAvg
       };
     })
   };
 
-  return { teams: result, usedSeed, stats };
+  // Devolver equipos en formato agrupado por equipo para mejor legibilidad
+  const teamsByGroup = groups.map((group, idx) => ({
+    team: idx + 1,
+    players: group.map(user => user['player_id'])
+  }));
+
+  return { teams: result, teamsByGroup, usedSeed, stats };
 }
