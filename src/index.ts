@@ -19,6 +19,8 @@ function parseArgs(args: string[]) {
 function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[], teamsByGroup?: any[], warnings?: string[]) {
   const nf = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
   console.log('=== TEAM BALANCER SUMMARY ===');
+  console.log(`Seed: ${usedSeed}`);
+  console.log(`Property: ${stats.property || 'historical_points_earned'}`);
   console.log(`Number of teams: ${nf(stats.total_teams)}`);
   console.log(`Total number of players: ${nf(stats.total_players)}`);
   console.log(`Average team size: ${nf(stats.average_team_size)}%`);
