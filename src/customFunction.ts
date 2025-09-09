@@ -170,7 +170,7 @@ export async function customFunction(options: CustomOptions = {}) {
   }
 
   // Snake draft algorithm with strict team size control using draftOrder
-  // 2. Calculate ideal number of players per team
+  // 2. Calculate ideal number of players per team 
   const totalPlayers = draftOrder.length;
   const basePlayers = Math.floor(totalPlayers / teamsqty);
   const extra = totalPlayers % teamsqty;
