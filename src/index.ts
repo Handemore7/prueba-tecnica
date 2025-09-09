@@ -26,7 +26,7 @@ function parseArgs(args: string[]): CLIOptions {
 function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[], teamsByGroup?: any[], warnings?: string[], alertMsg?: string) {
   const nf = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
   if (alertMsg) {
-    console.log('================ ALERTA ==================');
+    console.log('================ ALERT ==================');
     console.log(alertMsg);
     console.log('==========================================');
   }
@@ -151,7 +151,7 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
   }
 
   if (alertMsg) {
-    console.log('================ ALERTA ==================');
+    console.log('================ ALERT ==================');
     console.log(alertMsg);
     console.log('==========================================');
   } else {
