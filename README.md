@@ -92,9 +92,8 @@ Team 2 MVP: User 25 — Most Points Earned: 19,091
 ... (more statistics)
 ```
 
-## Time-Spent
-# 02:30
-
+# Time-Spent
+## 02:30
 
 # Notes
 A team balancing algorithm was implemented using Google Sheets files as the database, with all player properties. The algorithm groups users into a chosen number of teams, preserving balance across key metrics to avoid possible user frustration with team assignments.
@@ -108,6 +107,23 @@ A team balancing algorithm was implemented using Google Sheets files as the data
 - https://docs.google.com/spreadsheets/d/1r8Hct_xwX6MbAw-trUpIZp0e5DgDEiCDfMlZtinpF90/edit?usp=sharing
 ## Events: 
 - https://docs.google.com/spreadsheets/d/19LcNa3r46-y_d0q4hWgytBJTenPKEj-yODY_wARAz2A/edit?usp=sharing
+
+# Google Service Account Credentials Setup
+
+To use this project, you need a Google Cloud service account with access to the Google Sheets API. The `credentials.json` file must contain the credentials for this service account.
+
+**How to set up your credentials:**
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project (or select an existing one).
+3. Enable the **Google Sheets API** for your project.
+4. Go to **APIs & Services > Credentials**.
+5. Click **Create Credentials > Service account**.
+6. Follow the prompts to create a service account. Download the JSON key file.
+7. Rename this file to `credentials.json` and place it in the root of this project (replace the placeholder file).
+8. Share your Google Sheets documents with the service account email (found in the `client_email` field of your credentials file) so it can access them.
+
+**Note:** Never commit your real `credentials.json` to version control. The file is in `.gitignore` by default.
 
 ## Maintenance & Updates
 
