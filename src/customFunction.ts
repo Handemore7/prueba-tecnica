@@ -43,59 +43,73 @@ export async function customFunction(options: CustomOptions = {}) {
       { sheetId: '14ecaqMY5Rq-fVn1eebS6Yq5GUyjfXDuUm-kn-tt4XpM', range: 'Sheet1!A2:Z' }
     ]
   } = options;
-  // Google authentication
-  const auth = new google.auth.GoogleAuth({
-    keyFile: 'credentials.json',
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-  });
-  const sheetsApi = google.sheets({ version: 'v4', auth });
-
+  const dryRun = process.env.DRY_RUN === 'true';
+  let dataError = false;
   // Validation warnings
   const warnings: string[] = [];
-
-  // Read and merge users from all sheets by player_id
-  const userMap: { [playerId: string]: User } = {};
   let sheetsRead = 0;
-  for (const src of sheets) {
-    try {
-      // Get the real name of the first sheet
-      const meta = await sheetsApi.spreadsheets.get({ spreadsheetId: src.sheetId });
-      const sheetName = meta.data.sheets?.[0]?.properties?.title;
-      if (!sheetName) throw new Error('Could not get sheet name');
-      // Read the whole range including header
-      const res = await sheetsApi.spreadsheets.values.get({ spreadsheetId: src.sheetId, range: `${sheetName}!A1:Z` });
-      const allRows = res.data.values || [];
-      if (allRows.length < 2) continue; // Must have at least header and one data row
-      const headers = allRows[0];
-      const rows = allRows.slice(1);
-      sheetsRead++;
-      if (headers) {
-        rows.forEach((row, rowIdx) => {
-          const user: User = {};
-          headers.forEach((h, i) => {
-            let val = row[i];
-            // If cell is empty or undefined, assign null
-            if (val === undefined || val === '') {
-              user[h] = null;
-              // Warn if key stat is missing
-                    if ([
-                      'player_id',
-                      'historical_points_earned',
-                      'historical_points_spent',
-                      'historical_events_participated',
-                      'historical_event_engagements',
-                      'historical_messages_sent',
-                      'days_active_last_30',
-                      'current_streak_value'
-                    ].includes(h)) {
-                warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Missing value for '${h}'.`);
-              }
-            } else if (!isNaN(Number(val))) {
-              // If it's a valid number, convert
-              user[h] = Number(val);
-            } else {
-              user[h] = val;
-              // Warn if key stat is not a number where expected
+  let users: User[] = [];
+
+  if (dryRun) {
+    // Generate synthetic deterministic users for CI validation (no external calls)
+    const syntheticCount = 40;
+    for (let i = 1; i <= syntheticCount; i++) {
+      users.push({
+        player_id: i,
+        historical_points_earned: 1000 + i * 17,
+        historical_points_spent: 400 + i * 5,
+        historical_events_participated: (i % 25),
+        historical_event_engagements: (i * 3) % 50,
+        historical_messages_sent: 200 + (i * 11),
+        days_active_last_30: (i * 7) % 30,
+        current_streak_value: (i * 3) % 20,
+        name: `User ${i}`
+      });
+    }
+  } else {
+    // Google authentication (only when not dry run)
+    const auth = new google.auth.GoogleAuth({
+      keyFile: 'credentials.json',
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
+    const sheetsApi = google.sheets({ version: 'v4', auth });
+
+    // Read and merge users from all sheets by player_id
+    const userMap: { [playerId: string]: User } = {};
+    for (const src of sheets) {
+      try {
+        const meta = await sheetsApi.spreadsheets.get({ spreadsheetId: src.sheetId });
+        const sheetName = meta.data.sheets?.[0]?.properties?.title;
+        if (!sheetName) throw new Error('Could not get sheet name');
+        const res = await sheetsApi.spreadsheets.values.get({ spreadsheetId: src.sheetId, range: `${sheetName}!A1:Z` });
+        const allRows = res.data.values || [];
+        if (allRows.length < 2) continue;
+        const headers = allRows[0];
+        const rows = allRows.slice(1);
+        sheetsRead++;
+        if (headers) {
+          rows.forEach((row: any[], rowIdx: number) => {
+            const user: User = {};
+            headers.forEach((h: string, i: number) => {
+              let val = row[i];
+              if (val === undefined || val === '') {
+                user[h] = null;
+                if ([
+                  'player_id',
+                  'historical_points_earned',
+                  'historical_points_spent',
+                  'historical_events_participated',
+                  'historical_event_engagements',
+                  'historical_messages_sent',
+                  'days_active_last_30',
+                  'current_streak_value'
+                ].includes(h)) {
+                  warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Missing value for '${h}'.`);
+                }
+              } else if (!isNaN(Number(val))) {
+                user[h] = Number(val);
+              } else {
+                user[h] = val;
                 if ([
                   'historical_points_earned',
                   'historical_points_spent',
@@ -105,26 +119,28 @@ export async function customFunction(options: CustomOptions = {}) {
                   'days_active_last_30',
                   'current_streak_value'
                 ].includes(h)) {
-                warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Invalid (non-numeric) value for '${h}': '${val}'.`);
+                  warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Invalid (non-numeric) value for '${h}': '${val}'.`);
+                }
               }
+            });
+            const playerId = user['player_id'];
+            if (playerId !== undefined && playerId !== '' && playerId !== null) {
+              const key = String(playerId);
+              userMap[key] = { ...userMap[key], ...user };
+            } else {
+              warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Missing or invalid player_id.`);
             }
           });
-          const playerId = user['player_id'];
-          if (playerId !== undefined && playerId !== '' && playerId !== null) {
-            const key = String(playerId);
-            userMap[key] = { ...userMap[key], ...user };
-          } else {
-            warnings.push(`Sheet ${src.sheetId} row ${rowIdx+2}: Missing or invalid player_id.`);
-          }
-        });
+        }
+      } catch (err) {
+        dataError = true;
+        const msg = (err && typeof err === 'object' && 'message' in err) ? (err as any).message : String(err);
+        console.error(`Error reading sheetId=${src.sheetId}:`, msg);
+        continue;
       }
-    } catch (err) {
-      const msg = (err && typeof err === 'object' && 'message' in err) ? (err as any).message : String(err);
-      console.error(`Error reading sheetId=${src.sheetId}:`, msg);
-      continue;
     }
+    users = Object.values(userMap);
   }
-  const users: User[] = Object.values(userMap);
 
   /*
     ============================= SEEDED DRAFT ORDER =============================
@@ -387,5 +403,5 @@ export async function customFunction(options: CustomOptions = {}) {
   // allUsers: all merged user objects
   const allUsers = users;
 
-  return { teams: result, teamsByGroup, usedSeed, stats, allUsers, warnings };
+  return { teams: result, teamsByGroup, usedSeed, stats, allUsers, warnings, dryRun, dataError };
 }

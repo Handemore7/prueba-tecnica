@@ -17,4 +17,8 @@ jobs:
           node-version: 18.x
       - run: npm ci
       - run: npx tsc
-      - run: node dist/index.js 1 2
+      - name: Run team balancer (dry run)
+        env:
+          DRY_RUN: true
+        run: |
+          node dist/index.js seed=123 teamsqty=4 property=historical_points_earned

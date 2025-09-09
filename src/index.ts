@@ -23,8 +23,13 @@ function parseArgs(args: string[]): CLIOptions {
 }
 
 
-function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[], teamsByGroup?: any[], warnings?: string[]) {
+function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[], teamsByGroup?: any[], warnings?: string[], alertMsg?: string) {
   const nf = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (alertMsg) {
+    console.log('================ ALERTA ==================');
+    console.log(alertMsg);
+    console.log('==========================================');
+  }
   console.log('=== TEAM BALANCER SUMMARY ===');
   console.log(`Seed: ${usedSeed}`);
   console.log(`Property: ${stats.property || 'historical_points_earned'}`);
@@ -118,7 +123,7 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
         days_active_last_30: u.days_active_last_30,
         current_streak_value: u.current_streak_value
       }));
-      console.log('No MVPs found for any team. [DEBUG] teamsByGroup.length:', groups.length, 'allUsers.length:', (allUsers || []).length);
+      console.log('No MVPs found for any team.', 'allUsers.length:', (allUsers || []).length);
       console.log('[DEBUG] Sample allUsers:', JSON.stringify(debugUsers, null, 2));
     }
   } else {
@@ -134,7 +139,7 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
       days_active_last_30: u.days_active_last_30,
       current_streak_value: u.current_streak_value
     }));
-    console.log('No MVPs found for any team. [DEBUG] teamsByGroup.length:', (teamsByGroup || []).length, 'allUsers.length:', (allUsers || []).length);
+    console.log('No MVPs found for any team.', 'allUsers.length:', (allUsers || []).length);
     console.log('[DEBUG] Sample allUsers:', JSON.stringify(debugUsers, null, 2));
   }
   if (warnings && warnings.length > 0) {
@@ -145,6 +150,11 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
     }
   }
   console.log('\n============================');
+  if (alertMsg) {
+    console.log('================ ALERTA ==================');
+    console.log(alertMsg);
+    console.log('==========================================');
+  }
 }
 
 async function main() {
@@ -161,8 +171,9 @@ async function main() {
     }
     process.stdout.write('Generating team balance report' + '.'.repeat(dots));
   }, 400);
+  let alertMsg: string | undefined = undefined;
   try {
-    const { usedSeed, stats, allUsers, teamsByGroup, warnings } = await customFunction(options);
+    const { usedSeed, stats, allUsers, teamsByGroup, warnings, dryRun, dataError } = await customFunction(options);
     if (loadingInterval) {
       clearInterval(loadingInterval);
       if (process.stdout.isTTY) {
@@ -170,7 +181,12 @@ async function main() {
         process.stdout.cursorTo(0);
       }
     }
-    printTeamBalancerSummary(stats, usedSeed, allUsers, teamsByGroup, warnings);
+    if (dryRun) {
+      alertMsg = 'WARNING: The report was generated with test data (DRY_RUN=true). This happens because real credentials were not used, the Google Sheets links may be incorrect, or the environment does not allow access to real data. The results DO NOT correspond to real data.';
+    } else if (dataError) {
+      alertMsg = 'WARNING: There was an error trying to access real data from Google Sheets. This may be due to invalid credentials, incorrect links, missing permissions, or network issues. The report may be incomplete or empty.';
+    }
+    printTeamBalancerSummary(stats, usedSeed, allUsers, teamsByGroup, warnings, alertMsg);
   } catch (err) {
     if (loadingInterval) {
       clearInterval(loadingInterval);
@@ -179,6 +195,10 @@ async function main() {
         process.stdout.cursorTo(0);
       }
     }
+  const alertMsg = 'WARNING: There was an error trying to access real data from Google Sheets. This may be due to invalid credentials, incorrect links, missing permissions, or network issues. The report may be incomplete or empty.';
+    // Solo mostrar una vez el informe vacío y la alerta
+    printTeamBalancerSummary({ total_teams: 0, total_players: 0, average_team_size: 0, average_team_score: 0, sheets_read: 0, points: {}, actives: {}, streaks: {}, events: {}, team_stats: [], top5_points: [], bottom5_points: [] }, 0, [], [], [], alertMsg);
+    // Mostrar detalles del error solo en consola de error
     console.error('\n[ERROR] Something went wrong while generating the report.');
     if (err && typeof err === 'object' && 'message' in err) {
       console.error('Details:', (err as any).message);
