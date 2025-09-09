@@ -82,7 +82,7 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
         }).filter(Boolean);
       }
       if (!users.length) {
-        console.log(`[DEBUG] No users found for team ${teamIdx+1}. group.players:`, JSON.stringify(group.players), 'allUsers sample:', JSON.stringify(allUsers.slice(0,3)));
+        console.log(`[DEBUG] No users found for team ${teamIdx + 1}. group.players:`, JSON.stringify(group.players), 'allUsers sample:', JSON.stringify(allUsers.slice(0, 3)));
         return;
       }
       keyStats.forEach(stat => {
@@ -91,7 +91,7 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
         if (topUser) {
           mvpList.push({
             team: teamIdx + 1,
-            name: topUser.name || topUser.player_id || `Player ${teamIdx+1}`,
+            name: topUser.name || topUser.player_id || `Player ${teamIdx + 1}`,
             stat: stat.label,
             value: typeof topUser[stat.prop] === 'number' ? nf(topUser[stat.prop]) : topUser[stat.prop],
             prop: stat.prop
@@ -149,11 +149,13 @@ function printTeamBalancerSummary(stats: any, usedSeed: number, allUsers?: any[]
       console.log(`...and ${warnings.length - 10} more warnings.`);
     }
   }
-  console.log('\n============================');
+
   if (alertMsg) {
     console.log('================ ALERTA ==================');
     console.log(alertMsg);
     console.log('==========================================');
+  } else {
+    console.log('\n============================');
   }
 }
 
@@ -195,7 +197,7 @@ async function main() {
         process.stdout.cursorTo(0);
       }
     }
-  const alertMsg = 'WARNING: There was an error trying to access real data from Google Sheets. This may be due to invalid credentials, incorrect links, missing permissions, or network issues. The report may be incomplete or empty.';
+    const alertMsg = 'WARNING: There was an error trying to access real data from Google Sheets. This may be due to invalid credentials, incorrect links, missing permissions, or network issues. The report may be incomplete or empty.';
     // Solo mostrar una vez el informe vacío y la alerta
     printTeamBalancerSummary({ total_teams: 0, total_players: 0, average_team_size: 0, average_team_score: 0, sheets_read: 0, points: {}, actives: {}, streaks: {}, events: {}, team_stats: [], top5_points: [], bottom5_points: [] }, 0, [], [], [], alertMsg);
     // Mostrar detalles del error solo en consola de error
