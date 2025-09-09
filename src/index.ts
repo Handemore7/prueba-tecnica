@@ -155,23 +155,29 @@ async function main() {
   process.stdout.write('Generating team balance report');
   loadingInterval = setInterval(() => {
     dots = (dots + 1) % 4;
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
+    if (process.stdout.isTTY) {
+      process.stdout.clearLine(0);
+      process.stdout.cursorTo(0);
+    }
     process.stdout.write('Generating team balance report' + '.'.repeat(dots));
   }, 400);
   try {
     const { usedSeed, stats, allUsers, teamsByGroup, warnings } = await customFunction(options);
     if (loadingInterval) {
       clearInterval(loadingInterval);
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
+      if (process.stdout.isTTY) {
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+      }
     }
     printTeamBalancerSummary(stats, usedSeed, allUsers, teamsByGroup, warnings);
   } catch (err) {
     if (loadingInterval) {
       clearInterval(loadingInterval);
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
+      if (process.stdout.isTTY) {
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+      }
     }
     console.error('\n[ERROR] Something went wrong while generating the report.');
     if (err && typeof err === 'object' && 'message' in err) {
