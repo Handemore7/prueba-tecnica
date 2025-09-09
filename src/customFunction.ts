@@ -126,26 +126,52 @@ export async function customFunction(options: CustomOptions = {}) {
   }
   const users: User[] = Object.values(userMap);
 
-  // Deterministic shuffle
+  /*
+    ============================= SEEDED DRAFT ORDER =============================
+    Previously the seed was only used to shuffle an array that was never consumed
+    by the team assignment (because we later sorted strictly by the target
+    property). That made the output invariant to the seed value.
+
+    New approach:
+    1. Sort users by the selected property to preserve a skill/points hierarchy.
+    2. Split the sorted list into buckets (tiers). Number of buckets scales with
+       teams (min 2 * teams, capped at 10) so stronger players stay near the top
+       while still allowing variation.
+    3. Deterministically shuffle each bucket with the Mulberry32 RNG seeded by
+       the provided seed.
+    4. Concatenate the shuffled buckets to form the draft order used by the
+       snake draft. Different seeds => different intra‑tier order => different
+       final team compositions, while identical seeds reproduce exactly.
+  */
   const usedSeed = seed !== undefined ? seed : Math.floor(Math.random() * 1e9);
   const rand = mulberry32(usedSeed);
-  const shuffled: User[] = users.slice();
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    const temp = shuffled[i] as User;
-    shuffled[i] = shuffled[j] as User;
-    shuffled[j] = temp;
-  }
 
-  // Snake draft algorithm with strict team size control
-  // 1. Sort by property (descending)
-  const sorted = [...users].sort((a, b) => {
+  // 1. Base ordering by property (descending)
+  const baseSorted = [...users].sort((a, b) => {
     const aVal = typeof a[property] === 'number' ? (a[property] as number) : 0;
     const bVal = typeof b[property] === 'number' ? (b[property] as number) : 0;
     return bVal - aVal;
   });
+
+  // 2. Bucket (tier) sizing
+  const numBuckets = Math.min(Math.max(teamsqty * 2, 2), 10); // between 2 and 10
+  const bucketSize = Math.ceil(baseSorted.length / numBuckets);
+  const draftOrder: User[] = [];
+  for (let b = 0; b < numBuckets; b++) {
+    const bucket = baseSorted.slice(b * bucketSize, (b + 1) * bucketSize);
+    // Fisher–Yates with seeded RNG
+    for (let i = bucket.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      const temp = bucket[i];
+      bucket[i] = bucket[j]!;
+      bucket[j] = temp!;
+    }
+    draftOrder.push(...bucket);
+  }
+
+  // Snake draft algorithm with strict team size control using draftOrder
   // 2. Calculate ideal number of players per team
-  const totalPlayers = sorted.length;
+  const totalPlayers = draftOrder.length;
   const basePlayers = Math.floor(totalPlayers / teamsqty);
   const extra = totalPlayers % teamsqty;
   // 3. Assign each team its max slots
@@ -153,7 +179,7 @@ export async function customFunction(options: CustomOptions = {}) {
   const groups: User[][] = Array.from({ length: teamsqty }, () => []);
   let direction = 1;
   let idx = 0;
-  for (const user of sorted) {
+  for (const user of draftOrder) {
     // Buscar el siguiente equipo con cupo disponible
   while ((groups[idx]?.length ?? 0) >= (teamLimits[idx] ?? 0)) {
       if (direction === 1) {
